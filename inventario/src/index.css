@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@source "./**/*.{js,jsx,ts,tsx}";
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+}
