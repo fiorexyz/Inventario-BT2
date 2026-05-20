@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useSolicitudes } from '../hooks/useSolicitudes';
+import { usePermission } from '../hooks/usePermission';
+import ProtectedAction from '../components/ProtectedAction';
 
 const ESTADO_COLORS = {
   solicitado: 'bg-yellow-100 text-yellow-800',
@@ -14,6 +16,7 @@ const ESTADO_COLORS = {
 export default function MovimientosPage() {
   const { user, profile } = useOutletContext();
   const { solicitudes, loading, error } = useSolicitudes();
+  const { can } = usePermission();
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
   const solicitudesFiltradas = filtroEstado === 'todos'
@@ -25,7 +28,7 @@ export default function MovimientosPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Movimientos y Solicitudes</h1>
         <p className="text-gray-600">
-          {profile?.rol === 'bodeguero'
+          {can('canApproveSolicitud')
             ? 'Gestiona las solicitudes de materiales de los padres'
             : 'Visualiza el estado de tus solicitudes de materiales'}
         </p>
@@ -60,7 +63,7 @@ export default function MovimientosPage() {
       {loading && (
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pearlaqua-300"></div>
             <p className="mt-4 text-gray-600">Cargando solicitudes...</p>
           </div>
         </div>
@@ -150,17 +153,19 @@ export default function MovimientosPage() {
 
                 {/* Acciones */}
                 <div className="flex gap-2">
-                  {profile?.rol === 'bodeguero' && solicitud.estado === 'solicitado' && (
-                    <>
-                      <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition">
-                        ✓ Aprobar
-                      </button>
-                      <button className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition">
-                        ✕ Rechazar
-                      </button>
-                    </>
-                  )}
-                  {profile?.rol === 'padrino' && solicitud.estado === 'en_uso' && (
+                  <ProtectedAction permission="canApproveSolicitud">
+                    {solicitud.estado === 'solicitado' && (
+                      <>
+                        <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition">
+                          ✓ Aprobar
+                        </button>
+                        <button className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-semibold transition">
+                          ✕ Rechazar
+                        </button>
+                      </>
+                    )}
+                  </ProtectedAction>
+                  {solicitud.estado === 'en_uso' && (
                     <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition">
                       📦 Devolver
                     </button>

@@ -1,5 +1,7 @@
 import { useOutletContext } from 'react-router-dom';
 import { useDashboardStats } from '../hooks/useDashboardStats';
+import { usePermission } from '../hooks/usePermission';
+import ProtectedAction from '../components/ProtectedAction';
 
 const iconModules = import.meta.glob('../assets/*.{svg,png,jpg,jpeg,webp}', {
   eager: true,
@@ -41,6 +43,7 @@ function StatIcon({ src, label, fallback, bgClass }) {
 export default function DashboardPage() {
   const { user, profile, onSignOut } = useOutletContext();
   const { stats, loading } = useDashboardStats();
+  const { can } = usePermission();
 
   return (
     <div className="p-6">
@@ -90,7 +93,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Resumen Rápido */}
-        <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg border border-cyan-200 p-6">
+        <div className="bg-linear-to-br from-cyan-50 to-blue-50 rounded-lg border border-cyan-200 p-6">
           <h2 className="text-sm font-semibold text-cyan-900 uppercase tracking-wider mb-4">
             Resumen Rápido
           </h2>
@@ -200,8 +203,12 @@ export default function DashboardPage() {
           <ul className="space-y-2 text-sm text-blue-800">
             <li>✓ Ver inventario de materiales</li>
             <li>✓ Revisar solicitudes pendientes</li>
-            {profile?.rol === 'padrino' && <li>✓ Crear nueva solicitud</li>}
-            {profile?.rol === 'bodeguero' && <li>✓ Gestionar materiales</li>}
+            <ProtectedAction permission="canCreateSolicitud">
+              <li>✓ Crear nueva solicitud</li>
+            </ProtectedAction>
+            <ProtectedAction permission="canCreateMaterial">
+              <li>✓ Gestionar materiales</li>
+            </ProtectedAction>
           </ul>
         </div>
 

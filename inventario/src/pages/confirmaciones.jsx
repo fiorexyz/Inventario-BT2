@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useSolicitudes } from '../hooks/useSolicitudes';
+import { usePermission } from '../hooks/usePermission';
+import ProtectedAction from '../components/ProtectedAction';
 
 export default function ConfirmacionesPage() {
   const { profile } = useOutletContext();
   const { solicitudes, loading, error } = useSolicitudes();
+  const { can } = usePermission();
   const [verifyingId, setVerifyingId] = useState(null);
   const [checklist, setChecklist] = useState({});
 
@@ -26,7 +29,7 @@ export default function ConfirmacionesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Confirmaciones de Devolución</h1>
         <p className="text-gray-600">
-          {profile?.rol === 'bodeguero'
+          {can('canConfirmEntrega')
             ? 'Verifica el estado de los materiales devueltos por los padres'
             : 'Estado de verificación de tus devoluciones'}
         </p>
@@ -54,7 +57,7 @@ export default function ConfirmacionesPage() {
       {!loading && !error && confirmacionesPendientes.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
-            {profile?.rol === 'bodeguero'
+            {can('canConfirmEntrega')
               ? '✓ No hay devoluciones pendientes de verificar'
               : 'No tienes devoluciones en proceso de verificación'}
           </p>
@@ -106,7 +109,7 @@ export default function ConfirmacionesPage() {
                             </div>
 
                             {/* Checklist si es bodeguero */}
-                            {profile?.rol === 'bodeguero' && (
+                            <ProtectedAction permission="canConfirmEntrega">
                               <div className="space-y-2">
                                 <label className="flex items-center gap-2 cursor-pointer">
                                   <input
@@ -131,7 +134,7 @@ export default function ConfirmacionesPage() {
                                   <span className="text-sm text-gray-700">En buen estado</span>
                                 </label>
                               </div>
-                            )}
+                            </ProtectedAction>
                           </div>
                         </div>
                       );
@@ -143,7 +146,7 @@ export default function ConfirmacionesPage() {
               )}
 
               {/* Notas */}
-              {profile?.rol === 'bodeguero' && (
+              <ProtectedAction permission="canConfirmEntrega">
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Notas de Verificación
@@ -154,10 +157,10 @@ export default function ConfirmacionesPage() {
                     rows="3"
                   />
                 </div>
-              )}
+              </ProtectedAction>
 
               {/* Acciones */}
-              {profile?.rol === 'bodeguero' && (
+              <ProtectedAction permission="canConfirmEntrega">
                 <div className="mt-6 flex gap-3 justify-end">
                   <button className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition">
                     Guardar Borrador
@@ -166,9 +169,13 @@ export default function ConfirmacionesPage() {
                     ✓ Confirmar Devolución
                   </button>
                 </div>
-              )}
+              </ProtectedAction>
 
-              {profile?.rol !== 'bodeguero' && (
+              <ProtectedAction permission="canConfirmEntrega" fallback={null}>
+                <div></div>
+              </ProtectedAction>
+
+              {!can('canConfirmEntrega') && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800">
                     Esperando verificación del bodeguero...
